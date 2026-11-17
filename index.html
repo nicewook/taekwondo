@@ -41,6 +41,8 @@
   .pface{width:19vmin;height:19vmin;border-radius:50%;border:.8vmin solid #fff;background:#334 center/cover;box-shadow:0 1vmin 0 rgba(0,0,0,.3)}
   .pcard.blue .pface{border-color:#4d8dff} .pcard.red .pface{border-color:#ff4d55}
   .pname{font-size:4vmin;font-weight:900}
+  .pface.pop{animation:fpop .4s ease-out}
+  @keyframes fpop{0%{transform:scale(.6) rotate(-10deg)}70%{transform:scale(1.12)}100%{transform:scale(1)}}
   .tag{font-size:2vmin;padding:.3vmin 1.6vmin;border-radius:999px;font-weight:800}
   .pcard.blue .tag{background:#1f5fe0} .pcard.red .tag{background:#d9262b}
   .small{font-size:2vmin;color:#cfe0ff;background:rgba(255,255,255,.12);border:.3vmin solid rgba(255,255,255,.35);border-radius:999px;padding:.6vmin 1.8vmin;font-weight:700}
@@ -52,6 +54,9 @@
   .opt{font-size:2.2vmin;color:#fff;background:rgba(255,255,255,.1);border:.3vmin solid rgba(255,255,255,.4);border-radius:999px;padding:.7vmin 2vmin;font-weight:800}
   .opt.on{background:#ffd84a;color:#1b2340;border-color:#ffd84a}
   #winFace{width:34vmin;height:34vmin;border-radius:50%;border:1.2vmin solid #ffd84a;background:#334 center/cover;box-shadow:0 0 6vmin rgba(255,216,74,.7);animation:wobble 1.2s ease-in-out infinite}
+  #loseFace{width:17vmin;height:17vmin;border-radius:50%;border:.8vmin solid #fff;background:#334 center/cover;filter:saturate(.6);animation:sad 2s ease-in-out infinite}
+  #loseText{font-size:2.6vmin;font-weight:800;background:rgba(255,255,255,.15);border-radius:999px;padding:.5vmin 1.8vmin}
+  @keyframes sad{0%,100%{transform:rotate(-6deg) translateY(0)}50%{transform:rotate(6deg) translateY(.8vmin)}}
   #crown{font-size:11vmin;margin-bottom:-4vmin;z-index:1;animation:bounce .8s ease-in-out infinite}
   #winText{font-size:8vmin;font-weight:900;color:#ffd84a;-webkit-text-stroke:.6vmin #1b2340;paint-order:stroke;margin:2vmin 0 1vmin}
   #winSub{font-size:2.8vmin;margin-bottom:3vmin}
@@ -79,7 +84,7 @@
 
   <div class="ov show" id="title">
     <h1>태권도 겨루기</h1>
-    <div class="sub">기획 정우성 · 체력 100, 얼굴 발차기 10점 · 몸통 5점 · 주먹 3점<br>↻ 회전 누르고 도는 동안 공격 버튼! 뒤후려차기 15 · 뒤차기 8 · 돌려 주먹 4</div><div class="ver">v1.1</div>
+    <div class="sub">기획 정우성 · 체력 100, 얼굴 발차기 10점 · 몸통 5점 · 주먹 3점<br>↻ 회전 누르고 도는 동안 공격 버튼! 뒤후려차기 15 · 뒤차기 8 · 돌려 주먹 4</div><div class="ver">v1.2</div>
     <div class="players">
       <div class="pcard blue"><div class="tag">청</div><div class="pface" id="tfb"></div><div class="pname" id="tnb"></div><button class="small" data-photo="0">📷 사진 바꾸기</button></div>
       <button class="swap" id="swap" title="자리 바꾸기">⇄</button>
@@ -97,8 +102,10 @@
   </div>
 
   <div class="ov" id="result">
-    <div id="crown">👑</div>
-    <div id="winFace"></div>
+    <div class="row" style="align-items:flex-end;gap:6vmin">
+      <div style="display:flex;flex-direction:column;align-items:center"><div id="crown">👑</div><div id="winFace"></div></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:1vmin"><div id="loseFace"></div><div id="loseText"></div></div>
+    </div>
     <div id="winText"></div>
     <div id="winSub"></div>
     <div class="row"><div class="big g" id="again">한 판 더!</div><div class="big b" id="toTitle">처음으로</div></div>
@@ -126,7 +133,7 @@ const W=1600, H=900, GROUND=780, ROUND_TIME=60, WIN_ROUNDS=2;
 const MOVES={
   headkick:{dmg:10,cd:1500,wind:260,act:110,rec:240,lunge:105,label:'얼굴',hitY:.2},
   bodykick:{dmg:5, cd:800, wind:180,act:100,rec:200,lunge:90, label:'몸통',hitY:.45},
-  punch:   {dmg:3, cd:380, wind:100,act:80, rec:150,lunge:70, label:'주먹',hitY:.35},
+  punch:   {dmg:3, cd:750, wind:100,act:80, rec:150,lunge:70, label:'주먹',hitY:.35},
   spin:    {dmg:0, cd:1300, dur:480,label:'회전'},
   block:   {dmg:0, cd:950, dur:560,label:'막기'}
 };
@@ -329,6 +336,10 @@ function matchEnd(ws){
     showOverlay('result'); const url=faceURL(n);
     $('winFace').style.backgroundImage=url?`url(${url})`:`url(${fallbackFace[ws].toDataURL()})`;
     $('winFace').style.borderColor=ws==='blue'?'#4d8dff':'#ff4d55';
+    const ls=other(ws), ln=nameOf(ls), lurl=faceURL(ln);
+    $('loseFace').style.backgroundImage=lurl?`url(${lurl})`:`url(${fallbackFace[ls].toDataURL()})`;
+    $('loseFace').style.borderColor=ls==='blue'?'#4d8dff':'#ff4d55';
+    $('loseText').textContent=(G.vs!=='2p'&&ls==='red')?'컴퓨터 (아쉽!)':ln+' — 다음엔 이길 거야!';
     $('winText').textContent=n+' 승리!';
     $('winSub').textContent=`${F.blue.wins} : ${F.red.wins}  ·  ${G.vs==='1p'&&ws==='red'?'컴퓨터에게 졌어요. 다시 도전!':'최고의 태권 선수!'}`;
     SFX.fanfare(); say(n+' 승리! 축하합니다!',{rate:1.05,pitch:1.2}); confettiBurst(); },400);
@@ -347,11 +358,11 @@ function aiThink(dt){
   if(me.state==='spin'&&!me.queued&&me.st>=(me.ai.chainAt||0)){ press('red',['headkick','bodykick','punch'][Math.random()*3|0]); }
   me.ai.next-=dt*1000; if(me.ai.next>0||me.state!=='idle'||G.phase!=='fight') return;
   const ready=m=>(me.cd[m]||0)<=G.time;
-  if(ready('spin')&&Math.random()<.18){ me.ai.chainAt=rnd(80,420); press('red','spin'); me.ai.next=rnd(700,1100); return; }
-  if(foe.state==='wind' && Math.random()<.5){ if(ready('block')&&Math.random()<.6) press('red','block'); else if(ready('punch')) press('red','punch'); me.ai.next=rnd(250,500); return; }
+  if(ready('spin')&&Math.random()<.07){ me.ai.chainAt=rnd(80,420); press('red','spin'); me.ai.next=rnd(700,1100); return; }
+  if(foe.state==='wind' && Math.random()<.22){ if(ready('block')&&Math.random()<.6) press('red','block'); else if(ready('punch')) press('red','punch'); me.ai.next=rnd(600,1000); return; }
   const opts=['headkick','bodykick','punch','punch'].filter(ready);
-  if(opts.length && Math.random()<.85) press('red',opts[Math.random()*opts.length|0]);
-  me.ai.next=rnd(350,900);
+  if(opts.length && Math.random()<.6) press('red',opts[Math.random()*opts.length|0]);
+  me.ai.next=rnd(800,1600);
 }
 
 /* ===== effects ===== */
@@ -544,7 +555,8 @@ function refreshTitle(){
   document.querySelectorAll('[data-seat]').forEach(o=>o.classList.toggle('on',o.dataset.seat===seat));
   $('stage').classList.toggle('face',seat==='face');
 }
-$('swap').onclick=()=>{ audioInit(); SFX.click(); order=[order[1],order[0]]; localStorage.setItem('tkd_order',JSON.stringify(order)); refreshTitle(); };
+$('swap').onclick=()=>{ audioInit(); SFX.click(); order=[order[1],order[0]]; localStorage.setItem('tkd_order',JSON.stringify(order)); refreshTitle();
+  for(const id of ['tfb','tfr']){ const e=$(id); e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); } };
 document.querySelectorAll('[data-seat]').forEach(o=>o.onclick=()=>{ SFX.click(); seat=o.dataset.seat; localStorage.setItem('tkd_seat',seat); refreshTitle(); });
 $('go2').onclick=()=>{ SFX.click(); startMatch('2p'); };
 $('go1').onclick=()=>{ SFX.click(); startMatch('1p'); };

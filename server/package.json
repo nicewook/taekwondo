@@ -1,0 +1,10 @@
+{
+  "name": "taekwondo-server",
+  "version": "2.0.0",
+  "private": true,
+  "description": "태권도 겨루기 — 패드 2대 방 연결 서버",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" },
+  "dependencies": { "ws": "^8.18.0" }
+}

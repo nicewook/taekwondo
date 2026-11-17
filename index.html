@@ -13,7 +13,7 @@
   html,body{margin:0;height:100%;background:#0f1530;overflow:hidden;font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
   #stage{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);aspect-ratio:16/9;width:min(100vw,177.78vh);overflow:hidden;border-radius:1vmin;background:#1b2340}
   canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-  .pad{position:absolute;top:19.5%;bottom:2.5%;width:19%;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,1fr);place-items:center;transition:opacity .3s}
+  .pad{position:absolute;top:19.5%;bottom:2.5%;width:19%;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(4,1fr);place-items:center;transition:opacity .3s}
   .pad.blue{left:.8%} .pad.red{right:.8%}
   .pad.hidden{opacity:0;pointer-events:none}
   .btn{position:relative;width:86%;aspect-ratio:1;border-radius:50%;border:.55vmin solid #fff;box-shadow:0 .8vmin 0 rgba(0,0,0,.3),inset 0 -1vmin 0 rgba(0,0,0,.18);overflow:hidden;transition:transform .08s,filter .08s;touch-action:none}
@@ -26,6 +26,8 @@
   .btn .cd{position:absolute;inset:0;border-radius:50%;background:conic-gradient(rgba(10,15,40,.62) var(--p,0%),transparent 0);pointer-events:none}
   .btn.down{transform:scale(.88);filter:brightness(1.35)}
   .btn .spinIco{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);font-size:5.4vmin;font-weight:900;color:#fff;text-shadow:0 .3vmin 0 rgba(0,0,0,.35);pointer-events:none}
+  .btn.mvb{background:radial-gradient(circle at 35% 28%,#d9c8ff,#7b5cf0 70%)!important}
+  .btn.mvb .spinIco{font-size:4.6vmin}
   .btn.jump{background:radial-gradient(circle at 35% 28%,#b9ffb0,#2fbf4a 70%)!important}
   .btn.spin{background:radial-gradient(circle at 35% 28%,#ffe58a,#ff9f1c 70%)!important}
   .btn.chain{box-shadow:0 0 0 .7vmin #ffd84a,0 0 3vmin #ffd84a;animation:chain .25s ease-in-out infinite alternate}
@@ -72,6 +74,10 @@
   #cropBox canvas{position:absolute;inset:0;width:100%;height:100%}
   #cropBox .ring{position:absolute;inset:6%;border-radius:50%;box-shadow:0 0 0 100vmax rgba(0,0,0,.55);border:.5vmin dashed #ffd84a;pointer-events:none}
   #zoom{width:50vmin;margin:2vmin 0}
+  #netCode{font-size:4vmin;width:20vmin;text-align:center;border-radius:999px;border:.5vmin solid #fff;padding:1vmin;font-weight:900;color:#1b2340}
+  #netMsg{font-size:3.2vmin;margin-top:2.4vmin;min-height:5vmin;text-align:center}
+  #netMsg b{font-size:8vmin;color:#ffd84a;letter-spacing:1.5vmin;display:block}
+  .soloc{cursor:pointer}
   #rot{display:none;position:fixed;inset:0;background:#1b2340;color:#fff;align-items:center;justify-content:center;font-size:5vmin;z-index:20;text-align:center}
   @media (orientation:portrait){#rot{display:flex}}
 </style>
@@ -85,7 +91,7 @@
 
   <div class="ov show" id="title">
     <h1>태권도 겨루기</h1>
-    <div class="sub">기획 정우성 · 체력 100, 얼굴 발차기 10점 · 몸통 5점 · 주먹 3점<br>↻ 회전 중 공격: 뒤후려차기 15 · 뒤차기 8 · 돌려 주먹 4 &nbsp;|&nbsp; ⤒ 점프로 몸통·주먹 피하기, 공중에서 발차기 = 날아차기 12</div><div class="ver">v1.3</div>
+    <div class="sub">기획 정우성 · 체력 100, 얼굴 발차기 10점 · 몸통 5점 · 주먹 3점<br>↻ 회전 중 공격: 뒤후려차기 15 · 뒤차기 8 · 돌려 주먹 4 &nbsp;|&nbsp; ⤒ 점프로 몸통·주먹 피하기, 공중에서 발차기 = 날아차기 12</div><div class="ver">v2.0</div>
     <div class="players">
       <div class="pcard blue"><div class="tag">청</div><div class="pface" id="tfb"></div><div class="pname" id="tnb"></div><button class="small" data-photo="0">📷 사진 바꾸기</button></div>
       <button class="swap" id="swap" title="자리 바꾸기">⇄</button>
@@ -94,12 +100,31 @@
     <div class="row">
       <div class="big g" id="go2">둘이 하기</div>
       <div class="big o" id="go1">컴퓨터랑 하기</div>
+      <div class="big b" id="goNet">따로 하기 (패드 2대)</div>
     </div>
     <div class="row opts">
       <span style="font-size:2.2vmin">앉는 자리</span>
       <div class="opt on" data-seat="side">나란히 (패드 1대 같이 보기)</div>
       <div class="opt" data-seat="face">마주 보기 (패드 눕혀 놓고)</div>
     </div>
+  </div>
+
+  <div class="ov" id="solo">
+    <h1 style="font-size:6vmin">누가 할래?</h1>
+    <div class="sub">고른 사람이 청, 컴퓨터가 홍이에요</div>
+    <div class="players">
+      <div class="pcard blue soloc" data-solo="0"><div class="pface" id="sf0"></div><div class="pname">우진</div></div>
+      <div class="pcard blue soloc" data-solo="1"><div class="pface" id="sf1"></div><div class="pname">우성</div></div>
+    </div>
+    <div class="big b" id="soloBack">돌아가기</div>
+  </div>
+
+  <div class="ov" id="net">
+    <h1 style="font-size:6vmin">패드 2대로 하기</h1>
+    <div class="row" style="margin:2.4vmin 0"><span style="font-size:2.8vmin;font-weight:800">나는</span><div class="opt on" data-me="0">우진</div><div class="opt" data-me="1">우성</div></div>
+    <div class="row"><div class="big g" id="netCreate">방 만들기</div><span style="font-size:2.6vmin">또는</span><input id="netCode" inputmode="numeric" maxlength="4" placeholder="번호"><div class="big o" id="netJoin">들어가기</div></div>
+    <div id="netMsg">한 명이 방을 만들고, 다른 한 명이 방 번호를 넣어요</div>
+    <div class="big b" id="netBack" style="margin-top:2vmin">돌아가기</div>
   </div>
 
   <div class="ov" id="result">
@@ -141,6 +166,9 @@ const MOVES={
 };
 const SPIN={headkick:{dmg:15,name:'뒤후려차기!'},bodykick:{dmg:8,name:'뒤차기!'},punch:{dmg:4,name:'돌려 주먹!'}};
 const ORDER=['headkick','bodykick','punch','spin','block','jump'];
+MOVES.fwd={dmg:0,cd:0,label:'앞으로'}; MOVES.back={dmg:0,cd:0,label:'뒤로'};
+const REACH={headkick:330,bodykick:320,punch:255}, WALK=300, MIN_GAP=190;
+const WS_URL = /railway\.app$/.test(location.host) ? `wss://${location.host}` : 'wss://taekwondo-production-4b56e00e.up.railway.app';
 const JUMP_V=1500, GRAV=4300, FLY={dmg:12,name:'날아차기!'};
 
 /* ===== util ===== */
@@ -233,7 +261,12 @@ const FACE={};   // name -> HTMLImageElement|null
 async function loadFaces(){
   for(const n of NAMES){ const src=localStorage.getItem('tkd_face_'+n)||DEFAULT_FACES[n]||null; FACE[n]=src?await loadImg(src):null; }
 }
-function faceURL(n){ return localStorage.getItem('tkd_face_'+n)||DEFAULT_FACES[n]||null; }
+let ROBOT_URL=null;
+function makeRobot(){ const c=document.createElement('canvas'); c.width=c.height=320; const x=c.getContext('2d');
+  const g=x.createRadialGradient(160,120,20,160,160,170); g.addColorStop(0,'#cfe3ff'); g.addColorStop(1,'#6d7fa8'); x.fillStyle=g; x.fillRect(0,0,320,320);
+  x.font='220px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif'; x.textAlign='center'; x.textBaseline='middle'; x.fillText('🤖',160,175);
+  ROBOT_URL=c.toDataURL(); FACE['컴퓨터']=c; }
+function faceURL(n){ if(n==='컴퓨터') return ROBOT_URL; return localStorage.getItem('tkd_face_'+n)||DEFAULT_FACES[n]||null; }
 let fallbackFace={};   // side -> canvas head crop from sprite
 
 /* ===== sprites ===== */
@@ -259,12 +292,16 @@ function newFighter(side){
 }
 const F={blue:newFighter('blue'),red:newFighter('red')};
 const other=s=>s==='blue'?'red':'blue';
-const nameOf=s=>NAMES[order[s==='blue'?0:1]];
+const NET={role:null,ws:null,ev:[],depth:0,me:0,blueName:'',redName:'',lastSend:0};
+const nameOf=s=> G.vs==='1p' ? (s==='red'?'컴퓨터':NAMES[G.solo||0])
+  : G.vs==='net' ? (s==='blue'?NET.blueName:NET.redName) : NAMES[order[s==='blue'?0:1]];
 
 /* ===== actions ===== */
 function canAct(p){ return G.phase==='fight' && (p.state==='idle'); }
 function press(side,move){
   audioInit();
+  if(NET.role==='guest'){ if(G.mode==='game') NET.send({k:'in',m:move}); return true; }
+  if(move==='fwd'||move==='back') return false;
   const p=F[side]; const now=G.time;
   if(G.phase==='fight' && p.state==='spin' && SPIN[move] && !p.queued){   // chain during spin
     p.queued=move; p.cd[move]=now+MOVES[move].cd; tone(880,1320,.08,{type:'square',vol:.12}); chainGlow(p,false); return true; }
@@ -291,6 +328,8 @@ function setState(p,s){ p.state=s; p.st=0;
 }
 function hitCheck(att){
   const def=F[other(att.side)], m=MOVES[att.move];
+  const reach=REACH[att.move]*(att.spinAtk?1.25:att.airAtk?1.15:1);
+  if(Math.abs(att.x-def.x)>reach){ addText('헛방!',att.x+att.dir*150,GROUND-420,'#dfe6ff',50); att.combo=0; return; }
   const hx=def.x - def.dir*20, hy=GROUND+def.y-414*(1-m.hitY);
   if(def.y<-70 && !att.airAtk && att.move!=='headkick'){   // jumped over a low attack
     addText('피했다!',def.x,GROUND+def.y-440,'#5fff7a',58); SFX.dodge(); att.combo=0; return; }
@@ -337,7 +376,7 @@ function timeUp(){
 }
 function nextRound(draw){ if(!draw) G.round++; startRound(); }
 function startRound(){
-  for(const s of ['blue','red']){ const p=F[s]; Object.assign(p,{hp:100,disp:100,x:p.home,vx:0,y:0,vy:0,airAtk:false,cd:{},combo:0,comboT:0,move:null,flash:0,queued:null,spinAtk:false}); setState(p,'idle'); }
+  for(const s of ['blue','red']){ const p=F[s]; p.home=s==='blue'?660:940; p.moveDir=0; Object.assign(p,{hp:100,disp:100,x:p.home,vx:0,y:0,vy:0,airAtk:false,cd:{},combo:0,comboT:0,move:null,flash:0,queued:null,spinAtk:false}); setState(p,'idle'); }
   G.timer=ROUND_TIME; G.phase='intro'; G.phaseT=0; G.slow=1; G.parts=[]; G.texts=[];
   setBanner(G.round+' 라운드','#fff',1.1,110); say(G.round+'라운드!'); SFX.beep();
   setTimeout(()=>{ if(G.mode!=='game')return; setBanner('준비...','#ffd84a',.7,90); SFX.beep(); },1150);
@@ -345,30 +384,35 @@ function startRound(){
 }
 function matchEnd(ws){
   G.phase='end'; BGM.stop();
-  const n=nameOf(ws);
-  setTimeout(()=>{
+  setTimeout(()=>showResult(ws),400);
+}
+function showResult(ws){
+    BGM.stop(); const n=nameOf(ws);
     showOverlay('result'); const url=faceURL(n);
     $('winFace').style.backgroundImage=url?`url(${url})`:`url(${fallbackFace[ws].toDataURL()})`;
     $('winFace').style.borderColor=ws==='blue'?'#4d8dff':'#ff4d55';
     const ls=other(ws), ln=nameOf(ls), lurl=faceURL(ln);
     $('loseFace').style.backgroundImage=lurl?`url(${lurl})`:`url(${fallbackFace[ls].toDataURL()})`;
     $('loseFace').style.borderColor=ls==='blue'?'#4d8dff':'#ff4d55';
-    $('loseText').textContent=(G.vs!=='2p'&&ls==='red')?'컴퓨터 (아쉽!)':ln+' — 다음엔 이길 거야!';
+    $('loseText').textContent=ln==='컴퓨터'?'컴퓨터 (아쉽!)':ln+' — 다음엔 이길 거야!';
     $('winText').textContent=n+' 승리!';
     $('winSub').textContent=`${F.blue.wins} : ${F.red.wins}  ·  ${G.vs==='1p'&&ws==='red'?'컴퓨터에게 졌어요. 다시 도전!':'최고의 태권 선수!'}`;
-    SFX.fanfare(); say(n+' 승리! 축하합니다!',{rate:1.05,pitch:1.2}); confettiBurst(); },400);
+    SFX.fanfare(); say(n+' 승리! 축하합니다!',{rate:1.05,pitch:1.2}); confettiBurst();
 }
 function startMatch(vs){
   audioInit(); G.vs=vs; G.mode='game'; G.round=1; F.blue.wins=F.red.wins=0;
-  hideOverlays(); $('padb').classList.remove('hidden'); $('padr').classList.toggle('hidden',vs==='1p');
+  hideOverlays(); $('padb').classList.toggle('hidden',vs==='net'&&NET.role==='guest'); $('padr').classList.toggle('hidden',vs==='1p'||(vs==='net'&&NET.role==='host'));
+  if(vs==='net') NET.send({k:'go'});
   try{ if(!document.fullscreenElement) document.documentElement.requestFullscreen?.().then(()=>screen.orientation?.lock?.('landscape').catch(()=>{})).catch(()=>{}); }catch(e){}
   BGM.start(); startRound();
 }
-function toTitle(){ G.mode='title'; BGM.stop(); $('padb').classList.add('hidden'); $('padr').classList.add('hidden'); refreshTitle(); showOverlay('title'); }
+function toTitle(){ netLeave(); G.mode='title'; BGM.stop(); $('padb').classList.add('hidden'); $('padr').classList.add('hidden'); refreshTitle(); showOverlay('title'); }
 
 /* ===== AI ===== */
 function aiThink(dt){
   const me=F.red, foe=F.blue;
+  me.ai.retreat=(me.ai.retreat||0)-dt; if(Math.random()<dt*.12) me.ai.retreat=rnd(.3,.7);
+  const gap=me.home-foe.home; me.moveDir = me.ai.retreat>0 ? -1 : gap>300 ? 1 : 0;
   if(me.state==='jump'&&me.st>=(me.ai.airAt||9999)&&Math.random()<.5){ me.ai.airAt=9999; press('red','bodykick'); }
   if(me.state==='spin'&&!me.queued&&me.st>=(me.ai.chainAt||0)){ press('red',['headkick','bodykick','punch'][Math.random()*3|0]); }
   me.ai.next-=dt*1000; if(me.ai.next>0||me.state!=='idle'||G.phase!=='fight') return;
@@ -393,12 +437,13 @@ function showCameo(side,text,dur=1.1){ G.cameo={side,text,life:dur,max:dur}; }
 
 /* ===== update ===== */
 function update(dt){
+  if(NET.role==='guest'){ guestUpdate(dt); return; }
   G.time+=dt*1000;
   if(G.hitstop>0){ G.hitstop-=dt; dt*=0.0; }
   if(G.slowT>0){ G.slowT-=dt; if(G.slowT<=0) G.slow=1; }
   const gdt=dt*G.slow;
   if(G.phase==='fight'){ G.timer-=gdt; if(G.timer<=0){ G.timer=0; timeUp(); } }
-  if(G.vs!=='2p') aiThink(gdt);
+  if(G.vs==='1p'||G.vs==='demo') aiThink(gdt);
   for(const s of ['blue','red']){
     const p=F[s]; p.st+=gdt*1000;
     let m=p.move&&MOVES[p.move];
@@ -408,6 +453,9 @@ function update(dt){
     else if(p.state==='block'&&p.st>=MOVES.block.dur) setState(p,'idle');
     else if(p.state==='spin'&&p.st>=MOVES.spin.dur){ if(p.queued){ p.move=p.queued; p.queued=null; p.spinAtk=true; p.hitDone=false; setState(p,'act'); } else setState(p,'idle'); }
     else if(p.state==='hit'&&p.st>=300) setState(p,'idle');
+    // walking (forward = toward the opponent)
+    if(p.moveDir && G.phase==='fight' && (p.state==='idle'||p.state==='block')){ p.home+=p.dir*p.moveDir*WALK*gdt; p.walk=(p.walk||0)+gdt; }
+    const o=F[other(s)]; p.home = s==='blue' ? clamp(p.home,230,o.home-MIN_GAP) : clamp(p.home,o.home+MIN_GAP,1370);
     // position: spring to home + knockback velocity
     m=p.move&&MOVES[p.move];
     let target=p.home;
@@ -419,7 +467,7 @@ function update(dt){
     p.x += p.vx*gdt; p.vx*=Math.pow(.0015,gdt);
     if(p.y<0||p.vy<0){ p.vy+=GRAV*gdt; p.y+=p.vy*gdt; if(p.y>=0){ p.y=0; p.vy=0; dust(p.x); SFX.land(); if(p.state==='jump') setState(p,'idle'); if(p.airAtk&&p.state!=='act') p.airAtk=false; } }
     const k=(p.state==='act'?40:14); p.x=lerp(p.x,target,1-Math.exp(-k*gdt));
-    p.lean = lerp(p.lean, p.state==='wind'?-.06: p.state==='act'?.04: p.state==='hit'?-.08:0, 1-Math.exp(-18*gdt));
+    p.lean = lerp(p.lean, (p.moveDir&&p.state==='idle')?p.moveDir*.05: p.state==='wind'?-.06: p.state==='act'?.04: p.state==='hit'?-.08:0, 1-Math.exp(-18*gdt));
     p.pop=Math.max(0,p.pop-gdt*7); p.flash=Math.max(0,p.flash-gdt*6); p.portraitShake=Math.max(0,p.portraitShake-gdt*3);
     p.disp = p.disp>p.hp ? Math.max(p.hp,p.disp-40*gdt*(p.disp-p.hp>8?2:1)) : p.hp;
     p.comboT=Math.max(0,p.comboT-gdt);
@@ -427,6 +475,9 @@ function update(dt){
     // cooldown ring UI
     for(const mv of ORDER){ const btn=p.btns&&p.btns[mv]; if(!btn) continue; const rem=Math.max(0,(p.cd[mv]||0)-G.time)/MOVES[mv].cd; btn.cd.style.setProperty('--p',(rem*100).toFixed(1)+'%'); }
   }
+  fxUpdate(dt,gdt);
+}
+function fxUpdate(dt,gdt){
   for(const q of G.parts){ q.x+=q.vx*gdt; q.y+=q.vy*gdt; q.life-=gdt; if(q.t==='spark'||q.t==='star'){q.vy+=1400*gdt;q.vx*=.96;} if(q.t==='dust'){q.vx*=.92;q.vy*=.92;} if(q.rot!==undefined) q.rot+=(q.vr||5)*gdt; if(q.t==='conf'){q.vx+=Math.sin(G.time/300+q.size)*20*gdt;} }
   G.parts=G.parts.filter(q=>q.life>0 && q.y<H+50);
   for(const t of G.texts){ t.y+=t.vy*gdt; t.vy*=.9; t.life-=gdt; t.sc=Math.min(1,t.sc+gdt*9); }
@@ -493,7 +544,7 @@ function hud(){
     ctx.save(); ctx.font='900 34px "Pretendard","Noto Sans KR",sans-serif'; ctx.textBaseline='middle'; ctx.lineWidth=6; ctx.strokeStyle='rgba(0,0,0,.45)'; ctx.fillStyle='#fff';
     ctx.textAlign=s==='blue'?'left':'right'; const tx=s==='blue'?left+18:left+bw-18; ctx.strokeText(p.hp,tx,y+bh/2+1); ctx.fillText(p.hp,tx,y+bh/2+1);
     ctx.font='900 30px "Pretendard","Noto Sans KR",sans-serif'; ctx.textAlign=s==='blue'?'left':'right'; const nx=s==='blue'?left+4:left+bw-4;
-    ctx.strokeText(nameOf(s)+(G.vs==='1p'&&s==='red'?' (컴퓨터)':''),nx,y+bh+30); ctx.fillText(nameOf(s)+(G.vs==='1p'&&s==='red'?' (컴퓨터)':''),nx,y+bh+30);
+    ctx.strokeText(nameOf(s),nx,y+bh+30); ctx.fillText(nameOf(s),nx,y+bh+30);
     ctx.restore();
     portrait(s, s==='blue'?92:W-92, 82, 66, p.portraitShake);
     for(let i=0;i<WIN_ROUNDS;i++){ const cx=s==='blue'? left+bw-30-i*44 : left+30+i*44; star(cx,y+bh+30,15,i<p.wins?(s==='blue'?'#4d8dff':'#ff4d55'):'rgba(255,255,255,.25)'); }
@@ -541,16 +592,22 @@ function draw(){
   }
 }
 let last=0;
-function loop(t){ const dt=Math.min(.05,(t-last)/1000||0); last=t; if(G.mode==='game'||G.parts.length) update(dt); draw(); requestAnimationFrame(loop); }
+function loop(t){ const dt=Math.min(.05,(t-last)/1000||0); last=t; if(G.mode==='game'||G.parts.length) update(dt); if(NET.role==='host'&&G.mode==='game') netTick(); draw(); requestAnimationFrame(loop); }
 
 /* ===== buttons ===== */
+function setMove(side,d){ if(G.vs==='1p'&&side==='red') return; if(NET.role==='guest'){ NET.send({k:'mv',d}); return; } F[side].moveDir=d; }
 function chainGlow(p,on){ for(const mv of ['headkick','bodykick','punch']) p.btns[mv]?.el.classList.toggle('chain',on); }
 function jumpGlow(p,on){ for(const mv of ['headkick','bodykick']) p.btns[mv]?.el.classList.toggle('chain',on||(p.state==='spin')); }
 function buildPads(){
   for(const s of ['blue','red']){
     const pad=$(s==='blue'?'padb':'padr'); pad.innerHTML=''; F[s].btns={};
-    for(const mv of ORDER){
+    for(const mv of [...ORDER, ...(s==='blue'?['back','fwd']:['fwd','back'])]){
       const b=document.createElement('div'); b.className='btn';
+      if(mv==='fwd'||mv==='back'){ b.classList.add('mvb'); const arrow=(s==='blue')===(mv==='fwd')?'▶':'◀';
+        b.innerHTML=`<div class="spinIco">${arrow}</div><div class="lb">${MOVES[mv].label}</div>`;
+        const d=mv==='fwd'?1:-1, on=e=>{ e.preventDefault(); b.classList.add('down'); setMove(s,d); }, off=()=>{ b.classList.remove('down'); setMove(s,0); };
+        b.addEventListener('pointerdown',on); b.addEventListener('pointerup',off); b.addEventListener('pointercancel',off); b.addEventListener('pointerleave',off);
+        pad.appendChild(b); continue; }
       if(mv==='spin') b.classList.add('spin');
       if(mv==='jump') b.classList.add('jump');
       const ico=mv==='spin'?'<div class="spinIco">↻</div>':mv==='jump'?'<div class="spinIco">⤒</div>':`<img src="${SPR[s][mv].src}">`;
@@ -562,7 +619,10 @@ function buildPads(){
     }
   }
 }
+const MVKEYS={z:['blue',-1],x:['blue',1],',':['red',1],'.':['red',-1]};
+addEventListener('keyup',e=>{ const mk=MVKEYS[e.key.toLowerCase()]; if(mk) setMove(mk[0],0); });
 addEventListener('keydown',e=>{ if(G.mode!=='game'||e.repeat) return; const k=e.key.toLowerCase();
+  if(MVKEYS[k]){ setMove(...MVKEYS[k]); return; }
   const map={a:['blue','headkick'],s:['blue','bodykick'],d:['blue','punch'],f:['blue','block'],g:['blue','spin'],h:['red','spin'],q:['blue','jump'],p:['red','jump'],j:['red','headkick'],k:['red','bodykick'],l:['red','punch'],';':['red','block']};
   if(map[k] && !(G.vs==='1p'&&map[k][0]==='red')) press(...map[k]); });
 
@@ -580,8 +640,16 @@ $('swap').onclick=()=>{ audioInit(); SFX.click(); order=[order[1],order[0]]; loc
   for(const id of ['tfb','tfr']){ const e=$(id); e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); } };
 document.querySelectorAll('[data-seat]').forEach(o=>o.onclick=()=>{ SFX.click(); seat=o.dataset.seat; localStorage.setItem('tkd_seat',seat); refreshTitle(); });
 $('go2').onclick=()=>{ SFX.click(); startMatch('2p'); };
-$('go1').onclick=()=>{ SFX.click(); startMatch('1p'); };
-$('again').onclick=()=>{ SFX.click(); G.parts=[]; startMatch(G.vs); };
+$('go1').onclick=()=>{ audioInit(); SFX.click(); NAMES.forEach((n,i)=>{ const u=faceURL(n); $('sf'+i).style.backgroundImage=`url(${u||fallbackFace.blue.toDataURL()})`; }); showOverlay('solo'); };
+document.querySelectorAll('[data-solo]').forEach(c=>c.onclick=()=>{ SFX.click(); G.solo=+c.dataset.solo; startMatch('1p'); });
+$('soloBack').onclick=()=>{ SFX.click(); showOverlay('title'); };
+$('goNet').onclick=()=>{ audioInit(); SFX.click(); $('netMsg').textContent='한 명이 방을 만들고, 다른 한 명이 방 번호를 넣어요'; showOverlay('net'); };
+document.querySelectorAll('[data-me]').forEach(o=>o.onclick=()=>{ SFX.click(); NET.me=+o.dataset.me; document.querySelectorAll('[data-me]').forEach(x=>x.classList.toggle('on',x===o)); });
+$('netBack').onclick=()=>{ SFX.click(); netLeave(); showOverlay('title'); };
+$('netCreate').onclick=async()=>{ SFX.click(); if(!await netConnect()) return; NET.role='host'; NET.send0({t:'create'}); $('netMsg').textContent='방 만드는 중...'; };
+$('netJoin').onclick=async()=>{ SFX.click(); const c=$('netCode').value.trim(); if(!/^\d{4}$/.test(c)){ $('netMsg').textContent='방 번호 4자리를 넣어 주세요'; return; }
+  if(!await netConnect()) return; NET.role='guest'; NET.send0({t:'join',code:c}); $('netMsg').textContent='들어가는 중...'; };
+$('again').onclick=()=>{ SFX.click(); G.parts=[]; if(NET.role==='guest'){ NET.send({k:'again'}); $('winSub').textContent='상대 패드에서 시작하길 기다려요...'; return; } startMatch(G.vs); };
 $('toTitle').onclick=()=>{ SFX.click(); G.parts=[]; toTitle(); };
 $('bHome').onclick=()=>{ SFX.click(); toTitle(); };
 $('bMute').onclick=()=>{ audioInit(); AU.on=!AU.on; if(AU.master) AU.master.gain.value=AU.on?.9:0; if(!AU.on&&'speechSynthesis' in window) speechSynthesis.cancel(); $('bMute').textContent=AU.on?'🔊 소리':'🔇 소리 끔'; };
@@ -603,9 +671,71 @@ $('cropOk').onclick=async()=>{ const out=document.createElement('canvas'); out.w
 $('cropCancel').onclick=()=>showOverlay('title');
 $('cropReset').onclick=async()=>{ localStorage.removeItem('tkd_face_'+cropName); await loadFaces(); refreshTitle(); showOverlay('title'); };
 
+/* ===== network (패드 2대) ===== */
+NET.send0=o=>{ if(NET.ws&&NET.ws.readyState===1) NET.ws.send(JSON.stringify(o)); };
+NET.send=d=>NET.send0({t:'msg',d});
+function netConnect(){ return new Promise(res=>{ netLeave(true); let done=false;
+  try{ NET.ws=new WebSocket(WS_URL); }catch(e){ $('netMsg').textContent='서버에 연결할 수 없어요'; return res(false); }
+  NET.ws.onopen=()=>{ done=true; res(true); };
+  NET.ws.onerror=()=>{ if(!done){ $('netMsg').textContent='서버에 연결할 수 없어요. 인터넷을 확인해 주세요'; res(false); } };
+  NET.ws.onclose=()=>{ if(NET.role) netLost('연결이 끊겼어요'); };
+  NET.ws.onmessage=e=>{ let m; try{ m=JSON.parse(e.data); }catch(_){ return; } netMsg(m); };
+  setTimeout(()=>{ if(!done){ $('netMsg').textContent='서버가 깨어나는 중이에요. 잠시 뒤 다시 눌러 주세요'; res(false); } },8000); }); }
+function netLeave(silent){ const ws=NET.ws; NET.role=null; NET.ws=null; if(ws){ ws.onclose=null; try{ ws.close(); }catch(e){} } }
+function netLost(msg){ NET.role=null; if(G.mode==='game'||$('result').classList.contains('show')){ RAW.setBanner(msg,'#fff',2,80); setTimeout(()=>toTitle(),2200); } else $('netMsg').textContent=msg; }
+function netMsg(m){
+  if(m.t==='created'){ $('netMsg').innerHTML=`방 번호<b>${m.code}</b>다른 패드에서 이 번호를 넣어 주세요`; return; }
+  if(m.t==='error'){ $('netMsg').textContent=m.msg; netLeave(); return; }
+  if(m.t==='left'){ netLost('상대가 나갔어요'); return; }
+  if(m.t==='paired'){ if(NET.role==='guest') NET.send({k:'hello',name:NAMES[NET.me]}); else $('netMsg').textContent='연결됐어요!'; return; }
+  if(m.t!=='msg') return; const d=m.d;
+  if(NET.role==='host'){
+    if(d.k==='hello'){ NET.blueName=NAMES[NET.me]; NET.redName=d.name!==NET.blueName?d.name:NAMES[1-NET.me];
+      NET.send({k:'names',blue:NET.blueName,red:NET.redName}); setTimeout(()=>startMatch('net'),600); }
+    else if(d.k==='in') press('red',d.m);
+    else if(d.k==='mv') F.red.moveDir=d.d;
+    else if(d.k==='again'&&G.phase==='end') { G.parts=[]; startMatch('net'); }
+  } else if(NET.role==='guest'){
+    if(d.k==='names'){ NET.blueName=d.blue; NET.redName=d.red; $('netMsg').textContent='연결됐어요!'; }
+    else if(d.k==='go'){ G.vs='net'; G.mode='game'; G.parts=[]; G.texts=[]; hideOverlays(); $('padb').classList.add('hidden'); $('padr').classList.remove('hidden'); BGM.start(); }
+    else if(d.k==='s') applySnap(d);
+  }
+}
+const CDM=['headkick','bodykick','punch','spin','block','jump'];
+function snapF(p){ const cd={}; for(const mv of CDM){ const r=(p.cd[mv]||0)-G.time; if(r>0) cd[mv]=Math.round(r); }
+  return {x:Math.round(p.x),y:Math.round(p.y),s:p.state,t:Math.round(p.st),po:p.pose,pp:+p.pop.toFixed(2),fl:+p.flash.toFixed(2),ln:+p.lean.toFixed(3),
+    hp:p.hp,ds:Math.round(p.disp),w:p.wins,ps:+p.portraitShake.toFixed(2),mv:p.move,sa:!!p.spinAtk,aa:!!p.airAtk,cd}; }
+function netTick(){ const now=performance.now(); if(now-NET.lastSend<33) return; NET.lastSend=now;
+  NET.send({k:'s',f:{blue:snapF(F.blue),red:snapF(F.red)},g:{tm:+G.timer.toFixed(2),r:G.round,ph:G.phase,sh:+G.shake.toFixed(1),sl:G.slow},ev:NET.ev}); NET.ev=[]; }
+function applySnap(d){
+  for(const s of ['blue','red']){ const p=F[s], q=d.f[s]; const was=p.state;
+    p.netX=q.x; if(p.x===undefined||Math.abs(p.x-q.x)>300) p.x=q.x; p.y=q.y; p.state=q.s; p.st=q.t; p.pose=q.po; p.pop=q.pp; p.flash=q.fl; p.lean=q.ln;
+    p.hp=q.hp; p.disp=q.ds; p.wins=q.w; p.portraitShake=q.ps; p.move=q.mv; p.spinAtk=q.sa; p.airAtk=q.aa;
+    p.cd={}; for(const mv in q.cd) p.cd[mv]=G.time+q.cd[mv];
+    if(was!==p.state && p.btns){ chainGlow(p,p.state==='spin'); jumpGlow(p,p.state==='jump'); } }
+  G.timer=d.g.tm; G.round=d.g.r; G.phase=d.g.ph; G.shake=Math.max(G.shake,d.g.sh); G.slow=d.g.sl;
+  for(const [name,args] of d.ev){ const f=RAW[name]; if(f) try{ f(...args); }catch(e){} }
+}
+function guestUpdate(dt){
+  G.time+=dt*1000;
+  for(const s of ['blue','red']){ const p=F[s];
+    if(p.netX!==undefined) p.x=lerp(p.x,p.netX,1-Math.exp(-22*dt)); p.st+=dt*1000*G.slow;
+    if(p.state==='act'||p.state==='rec'){ p.trail.unshift(p.x); if(p.trail.length>4)p.trail.pop(); } else if(p.trail.length) p.trail.pop();
+    for(const mv of CDM){ const btn=p.btns&&p.btns[mv]; if(!btn) continue; const rem=Math.max(0,(p.cd[mv]||0)-G.time)/MOVES[mv].cd; btn.cd.style.setProperty('--p',(rem*100).toFixed(1)+'%'); } }
+  fxUpdate(dt,dt*G.slow);
+}
+// record visual/sound effects on the host so the guest pad can replay them
+const RAW={};
+function netWrap(name,f){ RAW[name]=f; return function(...a){ const top=NET.depth===0; NET.depth++;
+  try{ return f.apply(this,a); } finally{ NET.depth--; if(top&&NET.role==='host'&&G.mode==='game') NET.ev.push([name,a]); } }; }
+spark=netWrap('spark',spark); ring=netWrap('ring',ring); addText=netWrap('addText',addText); dust=netWrap('dust',dust);
+confettiBurst=netWrap('confettiBurst',confettiBurst); setBanner=netWrap('setBanner',setBanner); showCameo=netWrap('showCameo',showCameo);
+say=netWrap('say',say); showResult=netWrap('showResult',showResult);
+for(const k of Object.keys(SFX)) SFX[k]=netWrap('sfx.'+k,SFX[k]);
+
 /* ===== boot ===== */
 (async()=>{
-  resize(); ARENA=await loadImg(ARENA_SRC); await loadSprites(); await loadFaces(); buildPads(); refreshTitle();
+  resize(); ARENA=await loadImg(ARENA_SRC); await loadSprites(); await loadFaces(); makeRobot(); buildPads(); refreshTitle();
   if('speechSynthesis' in window) speechSynthesis.getVoices();
   requestAnimationFrame(loop);
   if(new URLSearchParams(location.search).has('demo')) { startMatch('1p'); G.vs='demo'; }

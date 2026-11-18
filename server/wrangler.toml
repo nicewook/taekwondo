@@ -1,0 +1,17 @@
+name = "game-relay"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+workers_dev = true
+
+[[durable_objects.bindings]]
+name = "TKD"
+class_name = "Tkd"
+
+[[durable_objects.bindings]]
+name = "BB"
+class_name = "Bb"
+
+# Workers Free plan only allows SQLite-backed Durable Objects.
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Tkd", "Bb"]

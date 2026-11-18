@@ -91,7 +91,7 @@
 
   <div class="ov show" id="title">
     <h1>태권도 겨루기</h1>
-    <div class="sub">기획 정우성 · 체력 100, 얼굴 발차기 10점 · 몸통 5점 · 주먹 3점<br>↻ 회전 중 공격: 뒤후려차기 15 · 뒤차기 8 · 돌려 주먹 4 &nbsp;|&nbsp; ⤒ 점프로 몸통·주먹 피하기, 공중에서 발차기 = 날아차기 12</div><div class="ver">v2.0</div>
+    <div class="sub">기획 정우성 · 체력 100, 얼굴 발차기 10점 · 몸통 5점 · 주먹 3점<br>↻ 회전 중 공격: 뒤후려차기 15 · 뒤차기 8 · 돌려 주먹 4 &nbsp;|&nbsp; ⤒ 점프로 몸통·주먹 피하기, 공중에서 발차기 = 날아차기 12</div><div class="ver">v2.1</div>
     <div class="players">
       <div class="pcard blue"><div class="tag">청</div><div class="pface" id="tfb"></div><div class="pname" id="tnb"></div><button class="small" data-photo="0">📷 사진 바꾸기</button></div>
       <button class="swap" id="swap" title="자리 바꾸기">⇄</button>
@@ -168,7 +168,7 @@ const SPIN={headkick:{dmg:15,name:'뒤후려차기!'},bodykick:{dmg:8,name:'뒤�
 const ORDER=['headkick','bodykick','punch','spin','block','jump'];
 MOVES.fwd={dmg:0,cd:0,label:'앞으로'}; MOVES.back={dmg:0,cd:0,label:'뒤로'};
 const REACH={headkick:330,bodykick:320,punch:255}, WALK=300, MIN_GAP=190;
-const WS_URL = /railway\.app$/.test(location.host) ? `wss://${location.host}` : 'wss://taekwondo-production-4b56e00e.up.railway.app';
+const WS_URL = /railway\.app$/.test(location.host) ? `wss://${location.host}` : 'wss://game-relay.kids-games-relay.workers.dev/tkd';
 const JUMP_V=1500, GRAV=4300, FLY={dmg:12,name:'날아차기!'};
 
 /* ===== util ===== */
